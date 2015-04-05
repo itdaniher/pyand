@@ -189,7 +189,7 @@ class ADB(object):
         self.run_cmd('help')
         return self.__output
 
-    def get_devices(self):
+    def get_devices(self, type = "all"):
         """
         Return a dictionary of connected devices along with an incremented Id.
         adb devices
@@ -204,11 +204,18 @@ class ADB(object):
         try:
             n = 0
             output_list = self.__output.split("\n")
+            if type == "all":
+                test = lambda l: ('device' in l) or ('recovery' in l)
+            if type == "device":
+                test = lambda l: "device" in l
+            if type == "recovery":
+                test = lambda l: "recovery" in l
             for line in output_list:
                 l = line.split(' ')
-                if ('device' in l) or ('recovery' in l):
-                    device = line.split(' ')[-1]
-                    if device:
+                if test(l):
+                    device = l[-1]
+                    if device == "device":
+                        device = l[0]
                         device_dict[n] = device
                         n += 1
         except:
