@@ -216,8 +216,8 @@ class ADB(object):
                     device = l[-1]
                     if device == "device":
                         device = l[0]
-                        device_dict[n] = device
-                        n += 1
+                    device_dict[n] = device
+                    n += 1
         except:
             self.__devices = None
             error = 1
