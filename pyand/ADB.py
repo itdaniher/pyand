@@ -107,6 +107,27 @@ class ADB(object):
 
         return
 
+    def run_cmd_noblock(self, cmd):
+        """
+        Run a command against the adb tool ($ adb <cmd>)
+        """
+        self.__clean__()
+
+        if self.__adb_path is None:
+            self.__error = "[!] ADB path not set"
+            return False
+
+        try:
+            args = self.__build_command__(cmd)
+            if args is None:
+                return
+            #Print out args for debug purposes
+            #print 'args>', args
+            cmdp = subprocess.Popen(args, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            return cmdp
+        except:
+            return False
+
     def get_version(self):
         """
         Returns ADB tool version
