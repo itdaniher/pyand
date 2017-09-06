@@ -11,9 +11,8 @@ try:
     import sys
     import subprocess
     import re
-    from os import popen3 as pipe
 except ImportError as e:
-    print "[!] Required module missing. %s" % e.args[0]
+    print(("[!] Required module missing. %s" % e.args[0]))
     sys.exit(-1)
 
 
@@ -36,7 +35,7 @@ class ADB(object):
     DEFAULT_TCP_HOST = "localhost"
 
     def __init__(self, adb_path="adb"):
-        #By default we assume adb is in $PATH
+        # By default we assume adb is in $PATH
         self.__adb_path = adb_path
         if not self.check_path():
             self.__error = "[!] adb path not valid"
@@ -71,7 +70,7 @@ class ADB(object):
         elif type(cmd) is list:
             a = cmd
         else:
-            #All arguments must be single list items
+            # All arguments must be single list items
             a = cmd.split(" ")
 
         a.insert(0, self.__adb_path)
@@ -92,20 +91,17 @@ class ADB(object):
             self.__error = "[!] ADB path not set"
             return False
 
-        try:
-            args = self.__build_command__(cmd)
-            if args is None:
-                return
-            #Print out args for debug purposes
-            #print 'args>', args
-            cmdp = subprocess.Popen(args, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-            self.__output, self.__error = cmdp.communicate()
-            retcode = cmdp.wait()
-            return self.__output.rstrip('\n')
-        except OSError, e:
-            self.__error = str(e)
-
-        return
+        args = self.__build_command__(cmd)
+        if args is None:
+            return
+        # Print out args for debug purposes
+        #print(( 'args>', args))
+        cmdp = subprocess.Popen(
+            args, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        self.__output, self.__error = cmdp.communicate()
+        self.__output = self.__output.decode('utf-8')
+        retcode = cmdp.wait()
+        return self.__output.rstrip('\n')
 
     def run_cmd_noblock(self, cmd):
         """
@@ -121,9 +117,10 @@ class ADB(object):
             args = self.__build_command__(cmd)
             if args is None:
                 return
-            #Print out args for debug purposes
-            #print 'args>', args
-            cmdp = subprocess.Popen(args, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            # Print out args for debug purposes
+            # print 'args>', args
+            cmdp = subprocess.Popen(
+                args, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             return cmdp
         except:
             return False
@@ -147,11 +144,11 @@ class ADB(object):
         """
 
         if self.get_version() is None:
-            print "[-] adb executable not found"
+            print("[-] adb executable not found")
             return False
         return True
 
-    def set_adb_path(self,adb_path):
+    def set_adb_path(self, adb_path):
         """
         Set the ADB tool path
         """
@@ -186,7 +183,7 @@ class ADB(object):
         self.kill_server()
         return self.start_server()
 
-    def restore_file(self,file_name):
+    def restore_file(self, file_name):
         """
         Restore device contents from the <file> backup archive
         adb restore <file>
@@ -210,31 +207,31 @@ class ADB(object):
         self.run_cmd('help')
         return self.__output
 
-    def get_devices(self, type = "all"):
+    def get_devices(self, type="all"):
         """
         Return a dictionary of connected devices along with an incremented Id.
         adb devices
         """
         error = 0
-        #Clear existing list of devices
+        # Clear existing list of devices
         self.__devices = None
         self.run_cmd("devices -l")
-        device_dict =  {}
+        device_dict = {}
         if self.__error is not None:
             return None
         try:
             n = 0
             output_list = self.__output.split("\n")
             if type == "all":
-                test = lambda l: ('device' in l) or ('recovery' in l)
+                def test(l): return ('device' in l) or ('recovery' in l)
             if type == "device":
-                test = lambda l: "device" in l
+                def test(l): return "device" in l
             if type == "recovery":
-                test = lambda l: "recovery" in l
+                def test(l): return "recovery" in l
             for line in output_list:
                 l = line.split(' ')
                 if test(l):
-                    device = l[-1]
+                    device = l[-4]
                     if device == "device":
                         device = l[0]
                     device_dict[n] = device
@@ -250,10 +247,10 @@ class ADB(object):
         Specify the device name to target
         example: set_target_device('emulator-5554')
         """
-        if device is None or not device in self.__devices.values():
+        if device is None or not device in list(self.__devices.values()):
 
             self.__error = 'Must get device list first'
-            print "[!] Device not found in device list"
+            print("[!] Device not found in device list")
             return False
         self.__target = device
         return "[+] Target device set: %s" % self.get_target_device()
@@ -265,7 +262,7 @@ class ADB(object):
         """
         if device is None or not device in self.__devices:
             self.__error = 'Must get device list first'
-            print "[!] Device not found in device list"
+            print("[!] Device not found in device list")
             return False
         self.__target = self.__devices[device]
         return "[+] Target device set: %s" % self.get_target_device()
@@ -275,7 +272,7 @@ class ADB(object):
         Returns the selected device to work with
         """
         if self.__target == None:
-            print "[*] No device target set"
+            print("[*] No device target set")
 
         return self.__target
 
@@ -300,9 +297,10 @@ class ADB(object):
                     pattern = r"model:(.+)\sdevice"
                     pat = re.compile(pattern)
                     device_model = pat.findall(line)
-                    device_model = re.sub("[\[\]\'\{\}<>]", '', str(device_model))
+                    device_model = re.sub(
+                        "[\[\]\'\{\}<>]", '', str(device_model))
         except Exception as e:
-            return "[-] Error: %s" %e.args[0]
+            return "[-] Error: %s" % e.args[0]
 
         return device_model
 
@@ -313,13 +311,13 @@ class ADB(object):
         """
         return self.run_cmd('get-serialno')
 
-    def reboot_device(self,mode=0):
+    def reboot_device(self, mode=0):
         """
         Reboot the target device
         Specify mode to reboot normally, recovery or bootloader
         adb reboot <normally (0)/recovery (1) /bootloader (2)>
         """
-        if not mode in (self.REBOOT_NORMAL, self.REBOOT_RECOVERY,self.REBOOT_BOOTLOADER):
+        if not mode in (self.REBOOT_NORMAL, self.REBOOT_RECOVERY, self.REBOOT_BOOTLOADER):
             self.__error = "mode must be REBOOT_NORMAL/REBOOT_RECOVERY/REBOOT_BOOTLOADER"
             return self.__output
 
@@ -346,26 +344,23 @@ class ADB(object):
         self.run_cmd("remount")
         return self.__output
 
-    def get_remote_file(self,remote,local):
+    def get_remote_file(self, remote, local):
         """
         Pulls a remote file
         adb pull remote local
         """
-        self.run_cmd('pull %s %s' % (remote,local) )
-        if "bytes in" in self.__error:
-            self.__output = self.__error
-            self.__error = None
+        self.run_cmd('pull %s %s' % (remote, local))
         return self.__output
 
-    def push_local_file(self,local,remote):
+    def push_local_file(self, local, remote):
         """
         Push a local file
         adb push local remote
         """
-        self.run_cmd('push %s %s' % (local,remote) )
+        self.run_cmd('push %s %s' % (local, remote))
         return self.__output
 
-    def shell_command(self,cmd):
+    def shell_command(self, cmd):
         """
         Executes a shell command
         adb shell <cmd>
@@ -381,7 +376,7 @@ class ADB(object):
         self.run_cmd("usb")
         return self.__output
 
-    def listen_tcp(self,port=DEFAULT_TCP_PORT):
+    def listen_tcp(self, port=DEFAULT_TCP_PORT):
         """
         Restarts the adbd daemon listening on the specified port
         adb tcpip <port>
@@ -404,7 +399,7 @@ class ADB(object):
         """
         return self.run_cmd("jdwp")
 
-    def get_logcat(self,lcfilter=""):
+    def get_logcat(self, lcfilter=""):
         """
         View device log
         adb logcat <filter>
@@ -412,30 +407,30 @@ class ADB(object):
         self.run_cmd("logcat %s" % lcfilter)
         return self.__output
 
-    def run_emulator(self,cmd=""):
+    def run_emulator(self, cmd=""):
         """
         Run emulator console command
         """
         self.run_cmd("emu %s" % cmd)
         return self.__output
 
-    def connect_remote (self,host=DEFAULT_TCP_HOST,port=DEFAULT_TCP_PORT):
+    def connect_remote(self, host=DEFAULT_TCP_HOST, port=DEFAULT_TCP_PORT):
         """
         Connect to a device via TCP/IP
         adb connect host:port
         """
-        self.run_cmd("connect %s:%s" % ( host , port ) )
+        self.run_cmd("connect %s:%s" % (host, port))
         return self.__output
 
-    def disconnect_remote (self , host=DEFAULT_TCP_HOST , port=DEFAULT_TCP_PORT):
+    def disconnect_remote(self, host=DEFAULT_TCP_HOST, port=DEFAULT_TCP_PORT):
         """
         Disconnect from a TCP/IP device
         adb disconnect host:port
         """
-        self.run_cmd("disconnect %s:%s" % ( host , port ) )
+        self.run_cmd("disconnect %s:%s" % (host, port))
         return self.__output
 
-    def ppp_over_usb(self,tty=None,params=""):
+    def ppp_over_usb(self, tty=None, params=""):
         """
         Run PPP over USB
         adb ppp <tty> <params>
@@ -450,36 +445,37 @@ class ADB(object):
         self.run_cmd(cmd)
         return self.__output
 
-    def sync_directory(self,directory=""):
+    def sync_directory(self, directory=""):
         """
         Copy host->device only if changed (-l means list but don't copy)
         adb sync <dir>
         """
-        self.run_cmd("sync %s" % directory )
+        self.run_cmd("sync %s" % directory)
         return self.__output
 
-    def forward_socket(self,local=None,remote=None):
+    def forward_socket(self, local=None, remote=None):
         """
         Forward socket connections
         adb forward <local> <remote>
         """
         if local is None or remote is None:
             return self.__output
-        self.run_cmd("forward %s %s" % (local,remote) )
+        self.run_cmd("forward %s %s" % (local, remote))
         return self.__output
 
-    def uninstall(self,package=None,keepdata=False):
+    def uninstall(self, package=None, keepdata=False):
         """
         Remove this app package from the device
         adb uninstall [-k] package
         """
         if package is None:
             return self.__output
-        cmd = "uninstall %s" % (package if keepdata is True else "-k %s" % package )
+        cmd = "uninstall %s" % (
+            package if keepdata is True else "-k %s" % package)
         self.run_cmd(cmd)
         return self.__output
 
-    def install(self,pkgapp=None,fwdlock=False,reinstall=False,sdcard=False):
+    def install(self, pkgapp=None, fwdlock=False, reinstall=False, sdcard=False):
         """
         Push this package file to the device and install it
         adb install [-l] [-r] [-s] <file>
@@ -499,19 +495,19 @@ class ADB(object):
         if sdcard is True:
             cmd += " -s "
 
-        self.run_cmd("%s %s" % (cmd , pkgapp) )
+        self.run_cmd("%s %s" % (cmd, pkgapp))
         return self.__output
 
-    def find_binary(self,name=None):
+    def find_binary(self, name=None):
         """
         Look for a binary file on the device
         """
 
         self.shell_command("which %s" % name)
 
-        if self.__output is None: # not found
+        if self.__output is None:  # not found
             self.__error = "'%s' was not found" % name
-        elif self.__output.strip() == "which: not found": # which binary not available
+        elif self.__output.strip() == "which: not found":  # which binary not available
             self.__output = None
             self.__error = "which binary not found"
         else:
