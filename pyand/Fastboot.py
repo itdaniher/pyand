@@ -8,6 +8,7 @@ except ImportError, e:
     print "[!] Required module missing. %s" % e.args[0]
     sys.exit(-1)
 
+
 class Fastboot(object):
 
     __fastboot_path = None
@@ -43,26 +44,26 @@ class Fastboot(object):
         return ret
 
     def __build_command__(self, cmd):
-            """
-            Build command parameters for Fastboot command
-            """
-            if self.__devices is not None and len(self.__devices) > 1 and self.__target is None:
-                self.__error = "[!] Must set target device first"
-                return None
+        """
+        Build command parameters for Fastboot command
+        """
+        if self.__devices is not None and len(self.__devices) > 1 and self.__target is None:
+            self.__error = "[!] Must set target device first"
+            return None
 
-            if type(cmd) is tuple:
-                a = list(cmd)
-            elif type(cmd) is list:
-                a = cmd
-            else:
-                a = cmd.split(" ")
-            a.insert(0, self.__fastboot_path)
-            if self.__target is not None:
-                # add target device arguments to the command
-                a.insert(1, '-s')
-                a.insert(2, self.__target)
+        if type(cmd) is tuple:
+            a = list(cmd)
+        elif type(cmd) is list:
+            a = cmd
+        else:
+            a = cmd.split(" ")
+        a.insert(0, self.__fastboot_path)
+        if self.__target is not None:
+            # add target device arguments to the command
+            a.insert(1, '-s')
+            a.insert(2, self.__target)
 
-            return a
+        return a
 
     def run_cmd(self, cmd):
         """
@@ -121,16 +122,16 @@ class Fastboot(object):
         if self.__error is not None:
             return ''
         try:
-            device_list = self.__output.replace('fastboot','').split()
+            device_list = self.__output.replace('fastboot', '').split()
 
-            if device_list[1:] == ['no','permissions']:
+            if device_list[1:] == ['no', 'permissions']:
                 error = 2
                 self.__devices = None
         except:
             self.__devices = None
             error = 1
         i = 0
-        device_dict =  {}
+        device_dict = {}
         for device in device_list:
             # Add list to dictionary with incrementing ID
             device_dict[i] = device
