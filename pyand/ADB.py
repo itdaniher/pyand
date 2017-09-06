@@ -8,7 +8,7 @@ try:
     import platform
     from os import popen3 as pipe
 except ImportError as e:
-    print "[!] Required module missing. %s" % e.args[0]
+    print("[!] Required module missing. %s" % e.args[0])
     sys.exit(-1)
 
 
@@ -91,14 +91,15 @@ class ADB(object):
             args = self.__build_command__(cmd)
             if args is None:
                 return
-            cmdp = subprocess.Popen(args, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            cmdp = subprocess.Popen(
+                args, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             self.__output, self.__error = cmdp.communicate()
             retcode = cmdp.wait()
             if "device unauthorized" in self.__output:
                 self.__error = "[-] Device unauthorized"
                 return False
             return self.__output.rstrip('\n')
-        except OSError, e:
+        except OSError as e:
             self.__error = str(e)
 
         return
@@ -122,7 +123,7 @@ class ADB(object):
         """
 
         if self.get_version() is None:
-            print "[-] adb executable not found"
+            print("[-] adb executable not found")
             return False
         return True
 
@@ -221,10 +222,10 @@ class ADB(object):
         Specify the device name to target
         example: set_target_device('emulator-5554')
         """
-        if device is None or self.__devices is None or device not in self.__devices.values():
+        if device is None or self.__devices is None or device not in list(self.__devices.values()):
 
             self.__error = 'Must get device list first'
-            print "[!] Device not found in device list"
+            print("[!] Device not found in device list")
             return False
         self.__target = device
         return "[+] Target device set: %s" % self.get_target_device()
@@ -236,7 +237,7 @@ class ADB(object):
         """
         if device is None or self.__devices is None or device not in self.__devices:
             self.__error = 'Must get device list first'
-            print "[!] Device not found in device list"
+            print("[!] Device not found in device list")
             return False
         self.__target = self.__devices[device]
         return "[+] Target device set: %s" % self.get_target_device()
@@ -246,7 +247,7 @@ class ADB(object):
         Returns the selected device to work with
         """
         if self.__target is None:
-            print "[*] No device target set"
+            print("[*] No device target set")
 
         return self.__target
 
@@ -271,7 +272,8 @@ class ADB(object):
                     pattern = r"model:(.+)\sdevice"
                     pat = re.compile(pattern)
                     device_model = pat.findall(line)
-                    device_model = re.sub("[\[\]\'{\}<>]", '', str(device_model))
+                    device_model = re.sub(
+                        "[\[\]\'{\}<>]", '', str(device_model))
         except Exception as e:
             return "[-] Error: %s" % e.args[0]
 
@@ -446,7 +448,8 @@ class ADB(object):
         """
         if package is None:
             return self.__output
-        cmd = "uninstall %s" % (package if keepdata is True else "-k %s" % package)
+        cmd = "uninstall %s" % (
+            package if keepdata is True else "-k %s" % package)
         self.run_cmd(cmd)
         return self.__output
 

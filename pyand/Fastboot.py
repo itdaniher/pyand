@@ -4,8 +4,8 @@ try:
     import sys
     import subprocess
     from os import popen3 as pipe
-except ImportError, e:
-    print "[!] Required module missing. %s" % e.args[0]
+except ImportError as e:
+    print("[!] Required module missing. %s" % e.args[0])
     sys.exit(-1)
 
 
@@ -79,11 +79,12 @@ class Fastboot(object):
             args = self.__build_command__(cmd)
             if args is None:
                 return
-            cmdp = subprocess.Popen(args, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            cmdp = subprocess.Popen(
+                args, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             self.__output, self.__error = cmdp.communicate()
             retcode = cmdp.wait()
             return self.__output
-        except OSError, e:
+        except OSError as e:
             self.__error = str(e)
 
         return
@@ -93,7 +94,7 @@ class Fastboot(object):
         Check if the Fastboot path is valid
         """
         if self.run_cmd("help") is None:
-            print "[-] fastboot executable not found"
+            print("[-] fastboot executable not found")
             return False
         return True
 
@@ -144,10 +145,10 @@ class Fastboot(object):
         Specify the device name to target
         example: set_target_device('emulator-5554')
         """
-        if device is None or not device in self.__devices.values():
+        if device is None or not device in list(self.__devices.values()):
 
             self.__error = 'Must get device list first'
-            print "[!] Device not found in device list"
+            print("[!] Device not found in device list")
             return False
         self.__target = device
         return "[+] Target device set: %s" % self.get_target_device()
@@ -159,7 +160,7 @@ class Fastboot(object):
         """
         if device is None or not device in self.__devices:
             self.__error = 'Must get device list first'
-            print "[!] Device not found in device list"
+            print("[!] Device not found in device list")
             return False
         self.__target = self.__devices[device]
         return "[+] Target device set: %s" % self.get_target_device()
@@ -169,7 +170,7 @@ class Fastboot(object):
         Returns the selected device to work with
         """
         if self.__target == None:
-            print "[*] No device target set"
+            print("[*] No device target set")
 
         return self.__target
 
